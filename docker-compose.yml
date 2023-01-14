@@ -1,0 +1,67 @@
+version: "3.4"
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: bitnami/kafka
+    ports:
+      - "9092:9092"
+    restart: always
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+    depends_on:
+      - zookeeper
+  sqlserver:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Password123"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    restart: always
+  mongo-container:
+    container_name: mongo-container
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - "mongodb_data_container:/data/db"
+    restart: always
+  postgres-container:
+    container_name: postgres-container
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: "Password123"
+    restart: always
+    volumes:
+      - "postgres_data_container:/var/lib/postgresql/data"
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+  mongodb_data_container:
+    driver: local
+  postgres_data_container:
+    driver: local
+   
+networks:
+  default:
+      name: mydockernetwork
